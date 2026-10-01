@@ -265,6 +265,38 @@ B 服：`張三`，可輸入 `張三`、`張`、`三`
   <br>
   在碎石確認介面等待，直到目前理智自動恢復 1 點後，再立刻執行碎石回復，以避免浪費自然恢復。  
   :::  
+  ::: field on_no_card  
+  @type string
+  @default current
+  @optional
+  僅剿滅（`Annihilation` 及 `*@Annihilation`）時生效。沒有常態事務代理卡時：
+  <br>
+  `current`（預設，可省略）- 維持原有作戰流程
+  <br>
+  `skip` - 跳過本次剿滅，任務鏈成功結束，回呼 `TaskResult.status=skipped`、`reason=NO_PRTS_CARD`
+  <br>
+  `fail` - 任務失敗，`reason=NO_PRTS_CARD`
+  <br>
+  `normal_deploy` - 不用代理卡，改走普通代理指揮  
+  :::  
+  ::: field on_no_record  
+  @type string
+  @default current
+  @optional
+  僅剿滅時生效。目前地圖沒有 400 殺滿分記錄、無法全權委託時：
+  <br>
+  `current`（預設）- 僅在完全無法代理（`UnableToAgent2`）時失敗，與歷史行為一致
+  <br>
+  `skip` - 跳過，`reason=NO_FULL_RECORD`
+  <br>
+  `fail` - 只要沒有全權委託就失敗，`reason=NO_FULL_RECORD`  
+  :::  
+  ::: field max_cards  
+  @type number
+  @default -1
+  @optional
+  僅剿滅時生效。本次最多消耗的常態事務代理卡數量。`-1` 表示不限制。  
+  :::  
   ::::
 
 <details>
@@ -1361,6 +1393,65 @@ Tag 等級（大於等於 3）對應的期望招募時限（單位：分鐘）�
 
 </details>
 
+- `Status`  
+   唯讀遊戲狀態查詢。除導航外不點擊戰鬥、領取或換班。結果透過 `SubTaskExtraInfo` 的 `what=GameStatus` 回傳；倉庫欄位同時沿用 `DepotInfo`。
+
+:::: field-group  
+::: field enable  
+@type boolean
+@default true
+@optional
+是否啟用本任務。  
+:::  
+::: field fields  
+@type array<string>
+@optional
+要採集的欄位列表。可選：`sanity` | `currency` / `orundum` / `originite` / `lmd` | `annihilation` | `depot` | `drones`。提供 `fields` 時以列表為準。  
+:::  
+::: field sanity  
+@type boolean
+@default false
+@optional
+讀取理智 current/max。未指定 `fields` 且所有開關均為 false 時，預設只開 sanity。  
+:::  
+::: field currency  
+@type boolean
+@default false
+@optional
+讀取頂欄合成玉 / 源石 / 龍門幣（讀得到的才輸出）。  
+:::  
+::: field annihilation  
+@type boolean
+@default false
+@optional
+進入剿滅備戰頁，讀取地圖名、本週進度、是否有滿分記錄、代理卡數量。  
+:::  
+::: field depot  
+@type boolean
+@default false
+@optional
+沿用倉庫辨識，在 `GameStatus.depot` 與 `DepotInfo` 中輸出 item_id → 數量。  
+:::  
+::: field drones  
+@type boolean
+@default false
+@optional
+進入基建總覽（不收菜），讀取無人機 current/max。  
+:::  
+::::
+
+<details>
+<summary>Example</summary>
+
+```json
+{
+   "enable": true,
+   "fields": ["sanity", "annihilation"]
+}
+```
+
+</details>
+
 - `OperBox`  
    幹員 box 辨識
 
@@ -1773,5 +1864,17 @@ AsstBool ASSTAPI AsstSetInstanceOption(AsstHandle handle, AsstInstanceOptionKey 
 @type string
 @optional
 客戶端類型（遊戲渠道）。大多數連線設定不需要設定。僅當傳給 `AsstConnect` / `AsstAsyncConnect` 的 `config` 在連線階段命令中使用 `[PackageName]` 時，才需要在連線前呼叫 `AsstSetInstanceOption(..., ClientType, ...)`。目前內建設定中僅 `Androws` 與 `WSA` 的 `displayId` 查詢依賴該值。此選項不取代 StartUp / CloseDown 等任務參數中的 `client_type`。列舉值：6。  
+:::  
+::: field DelayMultiplier  
+@type string
+@default 1.0
+@optional
+全域延遲/逾時倍率，字串浮點數，範圍 `[0.1, 10]`。會等比放大 preDelay / postDelay、任務間等待，以及戰鬥開始等待逾時。預設 `1.0`，行為與原先一致。列舉值：7。  
+:::  
+::: field SaveFailureScreenshot  
+@type string
+@default 1
+@optional
+識別失敗導致任務結束時，是否把目前截圖寫到使用者目錄 `debug/`。`"1"` 開（預設），`"0"` 關。列舉值：8。  
 :::  
 ::::

@@ -264,6 +264,38 @@ Currently supported stages for navigation include:
   <br>
   Wait at the Originite confirmation screen until the current 1 sanity point is restored, then immediately use Originite.  
   :::  
+  ::: field on_no_card  
+  @type string
+  @default current
+  @optional
+  Annihilation stages only (`Annihilation` and `*@Annihilation`). What to do when no PRTS proxy card is available:
+  <br>
+  `current` (default, omit to keep historical flow)
+  <br>
+  `skip` - skip this annihilation; task chain succeeds; callback `TaskResult.status=skipped`, `reason=NO_PRTS_CARD`
+  <br>
+  `fail` - fail the task, `reason=NO_PRTS_CARD`
+  <br>
+  `normal_deploy` - fight with regular Auto Deploy instead of a card  
+  :::  
+  ::: field on_no_record  
+  @type string
+  @default current
+  @optional
+  Annihilation only. What to do when the current map has no 400-kill full record (PRTS full proxy unavailable):
+  <br>
+  `current` (default) - fail only when auto-deploy is completely unavailable (`UnableToAgent2`), matching historical behavior
+  <br>
+  `skip` - skip, `reason=NO_FULL_RECORD`
+  <br>
+  `fail` - fail whenever full proxy is unavailable, `reason=NO_FULL_RECORD`  
+  :::  
+  ::: field max_cards  
+  @type number
+  @default -1
+  @optional
+  Annihilation only. Maximum PRTS proxy cards to consume this run. `-1` means unlimited.  
+  :::  
   ::::
 
 <details>
@@ -1361,6 +1393,65 @@ Whether to enable this task.
 
 </details>
 
+- `Status`
+  Read-only game status. Navigates but does not fight, claim rewards, or shift infrastructure. Results are sent as `SubTaskExtraInfo` with `what=GameStatus`. Depot also emits `DepotInfo`.
+
+:::: field-group  
+::: field enable  
+@type boolean
+@default true
+@optional
+Whether to enable this task.  
+:::  
+::: field fields  
+@type array<string>
+@optional
+Fields to collect: `sanity` | `currency` / `orundum` / `originite` / `lmd` | `annihilation` | `depot` | `drones`. Overrides the boolean switches when present.  
+:::  
+::: field sanity  
+@type boolean
+@default false
+@optional
+Read sanity current/max. If `fields` is omitted and every switch is false, sanity is enabled by default.  
+:::  
+::: field currency  
+@type boolean
+@default false
+@optional
+Read orundum / originite / LMD from the top bar when visible. The `orundum`, `originite`, and `lmd` booleans also turn this on.  
+:::  
+::: field annihilation  
+@type boolean
+@default false
+@optional
+Open the annihilation prep page and read map name, weekly progress, full-record flag, and PRTS card count.  
+:::  
+::: field depot  
+@type boolean
+@default false
+@optional
+Reuse depot recognition; emit item_id → count in `GameStatus.depot` and `DepotInfo`.  
+:::  
+::: field drones  
+@type boolean
+@default false
+@optional
+Open the infrastructure overview (no harvesting) and read drone current/max.  
+:::  
+::::
+
+<details>
+<summary>Example</summary>
+
+```json
+{
+   "enable": true,
+   "fields": ["sanity", "annihilation"]
+}
+```
+
+</details>
+
 - `OperBox`  
    Operator box recognition
 
@@ -1773,5 +1864,17 @@ Release Adb on exit. Options: "0" | "1". Enum value: 5.
 @type string
 @optional
 Client channel. Most connection configs do not need this option. Set it before `AsstConnect` / `AsstAsyncConnect` only when the selected `config` uses `[PackageName]` in commands executed during connect. In the built-in configs, only `Androws` and `WSA` currently require it for `displayId` lookup. This does not replace the `client_type` task parameter used by StartUp / CloseDown tasks. Enum value: 6.  
+:::  
+::: field DelayMultiplier  
+@type string
+@default 1.0
+@optional
+Global delay/timeout multiplier as a floating-point string, range `[0.1, 10]`. Scales preDelay / postDelay, inter-task waits, and battle-start timeouts. Default `1.0` leaves historical timing unchanged. Enum value: 7.  
+:::  
+::: field SaveFailureScreenshot  
+@type string
+@default 1
+@optional
+Whether to write a debug screenshot under the user `debug/` directory when recognition failure ends a task. `"1"` on (default; keeps the existing InterfaceTask failure screenshot and also saves on ProcessTask retry exhaustion), `"0"` off. Enum value: 8.  
 :::  
 ::::

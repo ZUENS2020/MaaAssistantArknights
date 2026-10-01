@@ -236,6 +236,8 @@ typedef void(ASST_CALL* AsstApiCallback)(AsstMsgId msg, const char* details_json
   보안 파견 자동지휘
 - `Depot`  
   창고 인식
+- `Status`  
+  읽기 전용 게임 상태
 - `OperBox`  
   오퍼레이터 인식
 - `Reclamation`  
@@ -607,6 +609,15 @@ typedef void(ASST_CALL* AsstApiCallback)(AsstMsgId msg, const char* details_json
   창고 인식 결과. `details` 필드 구조는 다음과 같습니다:
   - `done` (boolean, required): 인식 완료 여부, `false`는 아직 인식 중임(진행 중 데이터)을 의미
   - `data` (string, required): JSON 문자열, 형식은 `{"아이템ID": 수량, ...}`, 예: `{"2001":18000,"31043":317}`
+
+- `GameStatus`  
+  읽기 전용 `Status` 작업 결과. 요청한 필드만 포함되며, 실패한 필드는 `errors` 에 넣고 작업 체인은 성공으로 끝납니다.
+
+- `AnnihilationStatus`  
+  섬멸 출격 전 준비 화면 상태.
+
+- `TaskResult`  
+  skipped / succeeded / failed 를 구분하는 기계 가독 결과. `reason` 예: `NO_PRTS_CARD` | `NO_FULL_RECORD` | `WEEKLY_CAP_REACHED` | `MAX_CARDS_REACHED` | `RECOGNITION_FAILED`
 
 - `OperBoxInfo`  
   오퍼레이터 보관함 인식 결과. `details` 필드 구조는 다음과 같습니다:

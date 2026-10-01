@@ -243,6 +243,8 @@ typedef void(ASST_CALL* AsstApiCallback)(AsstMsgId msg, const char* details_json
    自動抄悖論模擬作業
 - `Depot`  
    倉庫辨識
+- `Status`  
+   唯讀遊戲狀態查詢
 - `OperBox`  
    幹員 Box 辨識
 - `Reclamation`  
@@ -639,6 +641,15 @@ typedef void(ASST_CALL* AsstApiCallback)(AsstMsgId msg, const char* details_json
   倉庫辨識結果。`details` 欄位結構如下：
   - `done` (boolean, required)：是否已經辨識完了，為 false 表示仍在辨識中（過程中的數據）。
   - `data` (string, required)：JSON 字串，格式為 `{"物品ID": 數量, ...}`，例如 `{"2001":18000,"31043":317}`。
+
+- `GameStatus`  
+  唯讀 `Status` 任務結果。僅包含本次請求的欄位；辨識失敗的欄位放入 `errors`，任務鏈仍成功結束。
+
+- `AnnihilationStatus`  
+  剿滅開打前的備戰頁狀態。
+
+- `TaskResult`  
+  任務跳過/失敗/成功的機器可讀結果。`status` 為 `succeeded` | `failed` | `skipped`。`reason` 例如 `NO_PRTS_CARD` | `NO_FULL_RECORD` | `WEEKLY_CAP_REACHED` | `MAX_CARDS_REACHED` | `RECOGNITION_FAILED`。
 
 - `OperBoxInfo`  
   幹員辨識結果。`details` 欄位結構如下：

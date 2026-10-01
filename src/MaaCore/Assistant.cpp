@@ -5,6 +5,7 @@
 #include <new>
 #include <ranges>
 
+#include "Common/DelayScaler.hpp"
 #include "Config/GeneralConfig.h"
 #include "Config/GpuDeviceSelector.h"
 #include "Config/Miscellaneous/OcrPack.h"
@@ -29,6 +30,7 @@
 #include "Task/Interface/SSSCopilotTask.h"
 #include "Task/Interface/SingleStepTask.h"
 #include "Task/Interface/StartUpTask.h"
+#include "Task/Interface/StatusTask.h"
 #include "Task/Interface/SwitchThemeTask.h"
 #include "Task/Interface/VideoRecognitionTask.h"
 #include "Utils/Logger.hpp"
@@ -233,6 +235,26 @@ bool asst::Assistant::set_instance_option(InstanceOptionKey key, const std::stri
     case InstanceOptionKey::ClientType:
         m_ctrler->set_client_type(value);
         return true;
+    case InstanceOptionKey::DelayMultiplier: {
+        double multiplier = DelayMultiplierDefault;
+        if (!parse_delay_multiplier(value, multiplier)) {
+            Log.error(__FUNCTION__, "invalid DelayMultiplier", value);
+            return false;
+        }
+        m_delay_multiplier = multiplier;
+        Log.info(__FUNCTION__, "DelayMultiplier set to", m_delay_multiplier);
+        return true;
+    }
+    case InstanceOptionKey::SaveFailureScreenshot:
+        if (value == "1") {
+            m_save_failure_screenshot = true;
+            return true;
+        }
+        if (value == "0") {
+            m_save_failure_screenshot = false;
+            return true;
+        }
+        break;
     default:
         break;
     }
@@ -337,6 +359,7 @@ asst::Assistant::TaskId asst::Assistant::append_task(const std::string& type, co
     ASST_ASSISTANT_APPEND_TASK_FROM_STRING_IF_BRANCH(DepotTask)
     ASST_ASSISTANT_APPEND_TASK_FROM_STRING_IF_BRANCH(OperBoxTask)
     ASST_ASSISTANT_APPEND_TASK_FROM_STRING_IF_BRANCH(ReclamationTask)
+    ASST_ASSISTANT_APPEND_TASK_FROM_STRING_IF_BRANCH(StatusTask)
     ASST_ASSISTANT_APPEND_TASK_FROM_STRING_IF_BRANCH(SwitchThemeTask)
     ASST_ASSISTANT_APPEND_TASK_FROM_STRING_IF_BRANCH(CustomTask)
 #ifdef ASST_DEBUG

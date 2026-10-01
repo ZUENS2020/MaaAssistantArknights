@@ -6,6 +6,8 @@ bool asst::InterfaceTask::run()
         return true;
     }
 
-    save_img(utils::path("debug") / utils::path("interface"));
+    if (save_failure_screenshot()) {
+        save_img(utils::path("debug") / utils::path("interface"));
+    }
     return false;
 }

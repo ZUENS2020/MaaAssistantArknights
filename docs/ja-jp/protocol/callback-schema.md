@@ -196,6 +196,8 @@ Todo
    自動逆理演算作戦
 - `Depot`  
    倉庫の識別
+- `Status`  
+   読み取り専用ゲーム状態
 - `OperBox`  
    オペレーターボックス識別
 - `Reclamation`  
@@ -588,6 +590,15 @@ Todo
   "done": bool,   // 認識が完了したかどうか，false はまだ進行中かどうか（処理中のデータ）
   "data": "{\"2001\":18000,\"31043\":317}"  // JSON文字列、形式: {"アイテムID": 数量, ...}
   ```
+
+- `GameStatus`  
+  読み取り専用 `Status` タスクの結果。要求したフィールドのみ。失敗したフィールドは `errors` に入り、タスクチェーンは成功終了します。
+
+- `AnnihilationStatus`  
+  殲滅出撃前の準備画面状態。
+
+- `TaskResult`  
+  スキップ/失敗/成功を区別する機械可読結果。`status` は `succeeded` | `failed` | `skipped`。`reason` は `NO_PRTS_CARD` | `NO_FULL_RECORD` | `WEEKLY_CAP_REACHED` | `MAX_CARDS_REACHED` | `RECOGNITION_FAILED` など。
 
 - `OperBoxInfo`  
    オペレーターボックス識別結果

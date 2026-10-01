@@ -916,7 +916,14 @@
     },
     "CloseAnnos": {
         "algorithm": "JustReturn",
-        "next": ["CloseAnno", "CloseAnnoTexas", "CloseAnnoSpecialAccess", "TodaysSupplies", "NotDownloadVoice"]
+        "next": [
+            "DismissGainedItems",
+            "CloseAnno",
+            "CloseAnnoTexas",
+            "CloseAnnoSpecialAccess",
+            "TodaysSupplies",
+            "NotDownloadVoice"
+        ]
     },
     "MainThemes": {
         "Doc": "使用本任务时带上 #next",
@@ -1765,6 +1772,7 @@
         "algorithm": "JustReturn",
         "sub": ["AwardExpandCheckFlow"],
         "next": [
+            "DismissGainedItems",
             "MiningActivitiesReturnHome",
             "MiningActivitiesReturnHome@QuickSwitch@ToHome#next",
             "MiningActivitiesReturnHome@ReturnButtons#next",
@@ -1805,6 +1813,7 @@
         "algorithm": "JustReturn",
         "sub": ["AwardExpandCheckFlow"],
         "next": [
+            "DismissGainedItems",
             "OrundumActivitiesReturnHome",
             "OrundumActivitiesReturnHome@QuickSwitch@ToHome#next",
             "OrundumActivitiesReturnHome@ReturnButtons#next",
@@ -1878,6 +1887,7 @@
     "RecruitingActivitiesBegin": {
         "algorithm": "JustReturn",
         "next": [
+            "DismissGainedItems",
             "RecruitingActivitiesReturnHome",
             "RecruitingActivitiesReturnHome@QuickSwitch@ToHome#next",
             "RecruitingActivitiesReturnHome@ReturnButtons#next",
@@ -1973,6 +1983,7 @@
         "algorithm": "JustReturn",
         "sub": ["AwardExpandCheckFlow"],
         "next": [
+            "DismissGainedItems",
             "SpecialAccessActivitiesReturnHome",
             "SpecialAccessActivitiesReturnHome@QuickSwitch@ToHome#next",
             "SpecialAccessActivitiesReturnHome@ReturnButtons#next",
@@ -2020,6 +2031,7 @@
         "algorithm": "JustReturn",
         "sub": ["AwardExpandCheckFlow"],
         "next": [
+            "DismissGainedItems",
             "SignInEventReturnHome",
             "SignInEventReturnHome@QuickSwitch@ToHome#next",
             "SignInEventReturnHome@ReturnButtons#next",
@@ -2129,7 +2141,8 @@
             "Award",
             "AwardBegin@QuickSwitch@ToHome#next",
             "Award@ReturnButtons#next",
-            "Award@CloseAnnos#next"
+            "Award@CloseAnnos#next",
+            "DismissGainedItems"
         ]
     },
     "Award": {
@@ -2157,14 +2170,17 @@
         "algorithm": "JustReturn",
         "action": "ClickRect",
         "specificRect": [600, 630, 60, 60],
-        "next": ["WeeklyTask", "AwardFinished", "CloseTaskAwardDouble"],
+        "next": ["WeeklyTask", "DismissGainedItems", "AwardFinished", "CloseTaskAwardDouble"],
         "maxTimes": 10,
         "postDelay": 500
     },
     "AwardFinished": {
-        "action": "Stop",
+        "action": "DoNothing",
         "roi": [400, 0, 880, 100],
-        "maskRange": [1, 255]
+        "maskRange": [1, 255],
+        "postDelay": 2000,
+        "doc": "任务页已领完后等一会儿，让晚弹出的获得物资出现再关掉，然后结束 Award 子链",
+        "next": ["DismissGainedItems", "Stop"]
     },
     "DailyTask": {
         "baseTask": "WeeklyTask",
@@ -2180,6 +2196,7 @@
     "MailBegin": {
         "algorithm": "JustReturn",
         "next": [
+            "DismissGainedItems",
             "MailReturnToHome",
             "MailReturnToHome@QuickSwitch@ToHome#next",
             "MailReturnToHome@ReturnButtons#next",

@@ -243,6 +243,8 @@ typedef void(ASST_CALL* AsstApiCallback)(AsstMsgId msg, const char* details_json
   自动抄悖论模拟作业
 - `Depot`  
   仓库识别
+- `Status`  
+  只读游戏状态查询
 - `OperBox`  
   干员 box 识别
 - `Reclamation`  
@@ -639,6 +641,30 @@ typedef void(ASST_CALL* AsstApiCallback)(AsstMsgId msg, const char* details_json
   仓库识别结果。`details` 字段结构如下：
   - `done` (boolean, required): 是否已经识别完了，为 `false` 表示仍在识别中（过程中的数据）。
   - `data` (string, required): JSON 字符串，格式为 `{"物品ID": 数量, ...}`，例如 `{"2001":18000,"31043":317}`。
+
+- `GameStatus`  
+  只读状态任务 `Status` 的识别结果。仅包含本次请求的字段；识别失败的字段放入 `errors` 数组，任务链仍成功结束。`details` 结构如下：
+  - `sanity` (object, optional): `{ "current": number, "max": number, "next_full_at": number }`。`next_full_at` 为 Unix 秒，按 6 分钟回复 1 点理智估算。
+  - `orundum` / `originite` / `lmd` (number, optional): 顶栏可读到的数量。
+  - `annihilation` (object, optional): `{ "map_name": string, "weekly_progress": number, "weekly_cap": number, "record_full": boolean, "prts_cards": number }`。
+  - `depot` (object, optional): `{ "<item_id>": count, ... }`。
+  - `drones` (object, optional): `{ "current": number, "max": number }`。
+  - `errors` (array<string>, optional): 请求了但未能识别的字段名。
+
+- `AnnihilationStatus`  
+  剿灭开打前的备战页状态（`Fight` 且 stage 为剿灭时回传）。`details` 结构如下：
+  - `map_name` (string, optional)
+  - `weekly_progress` / `weekly_cap` (number, optional)
+  - `record_full` (boolean, required): 是否可全权委托（存在满分记录）
+  - `can_agent` (boolean, required): 是否可普通代理或全权委托
+  - `unable_to_agent` (boolean, required): 是否命中无法代理
+  - `prts_cards` (number, optional)
+
+- `TaskResult`  
+  任务跳过/失败/成功的机器可读结果，便于脚本区分 skipped 与 succeeded。`details` 结构如下：
+  - `status` (string, required): `succeeded` | `failed` | `skipped`
+  - `reason` (string, optional): 稳定错误码，例如 `NO_PRTS_CARD` | `NO_FULL_RECORD` | `WEEKLY_CAP_REACHED` | `MAX_CARDS_REACHED` | `RECOGNITION_FAILED`
+  - 其余字段按场景附加，例如 `partial`、`cards_used`
 
 - `OperBoxInfo`  
   干员识别结果。`details` 字段结构如下：

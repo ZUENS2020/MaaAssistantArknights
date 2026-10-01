@@ -1,0 +1,162 @@
+{
+    "DismissGainedItems": {
+        "doc": "点掉晚出现的「获得物资」弹窗，避免 Award 子步骤之间卡在邮件/活动入口",
+        "algorithm": "OcrDetect",
+        "text": ["获得物资"],
+        "roi": [440, 90, 400, 140],
+        "action": "ClickSelf",
+        "preDelay": 300,
+        "postDelay": 800,
+        "maxTimes": 8,
+        "next": ["#self", "MainThemes#next"]
+    },
+    "AwardInterludeDismiss": {
+        "doc": "Award 子任务之间：先关奖励弹窗和公告；已在主界面时再等一会儿，避免「获得物资」晚弹出",
+        "algorithm": "JustReturn",
+        "next": [
+            "DismissGainedItems",
+            "AwardInterludeDismiss@CloseAnnos#next",
+            "AwardInterludeWaitAtHome",
+            "AwardInterludeDismiss@QuickSwitch@ToHome#next",
+            "AwardInterludeDismiss@ReturnButtons#next",
+            "Stop"
+        ]
+    },
+    "AwardInterludeWaitAtHome": {
+        "baseTask": "Home",
+        "action": "DoNothing",
+        "template": "SwitchTheme@ToggleSettingsMenu.png",
+        "postDelay": 2000,
+        "maxTimes": 2,
+        "next": ["DismissGainedItems", "AwardInterludeAtHome"]
+    },
+    "AwardInterludeAtHome": {
+        "baseTask": "Home",
+        "action": "Stop",
+        "template": "SwitchTheme@ToggleSettingsMenu.png"
+    },
+    "StatusBegin": {
+        "doc": "只读状态任务：先回主界面，不点击战斗/领取",
+        "algorithm": "JustReturn",
+        "next": [
+            "StatusAtHome",
+            "StatusBegin@QuickSwitch@ToHome#next",
+            "StatusBegin@ReturnButtons#next",
+            "StatusBegin@CloseAnnos#next",
+            "DismissGainedItems"
+        ]
+    },
+    "StatusAtHome": {
+        "baseTask": "Home",
+        "action": "Stop",
+        "template": "SwitchTheme@ToggleSettingsMenu.png"
+    },
+    "StatusEnterTerminal": {
+        "algorithm": "JustReturn",
+        "next": [
+            "StatusAtTerminal",
+            "StatusEnterTerminal@QuickSwitch@ToTerminal#next",
+            "StatusTerminalEntry",
+            "StatusEnterTerminal@ReturnButtons#next",
+            "StatusEnterTerminal@CloseAnnos#next"
+        ]
+    },
+    "StatusTerminalEntry": {
+        "doc": "只点终端入口，不走「前往上一次作战」",
+        "baseTask": "Fight",
+        "next": ["StatusAtTerminal", "StatusEnterTerminal@CloseAnnos#next", "StatusEnterTerminal@ReturnButtons#next"]
+    },
+    "StatusAtTerminal": {
+        "baseTask": "GoTerminalStopflag",
+        "action": "Stop"
+    },
+    "StatusAnnihilationBegin": {
+        "algorithm": "JustReturn",
+        "next": [
+            "StatusAnnihilation",
+            "StatusAnnihilationBegin@QuickSwitch@ToTerminal#next",
+            "StatusTerminalEntry",
+            "StatusAnnihilationBegin@ReturnButtons#next",
+            "StatusAnnihilationBegin@CloseAnnos#next"
+        ]
+    },
+    "StatusAnnihilation": {
+        "doc": "点进剿灭备战页后停在检查模板上，不点开始行动",
+        "baseTask": "Annihilation",
+        "next": [
+            "#self",
+            "UsePrts-AnnihilationSuccessCheck",
+            "UsePrts-AnnihilationCheck",
+            "UsePrtsSuccessCheck",
+            "Annihilation@UnableToAgent2"
+        ]
+    },
+    "StatusInfrastBegin": {
+        "doc": "只进入基建总览，不点通知、不收菜",
+        "algorithm": "JustReturn",
+        "next": [
+            "StatusInfrastOverview",
+            "StatusInfrast",
+            "StatusInfrastBegin@QuickSwitch@ToInfrast#next",
+            "StatusInfrastBegin@ReturnButtons#next",
+            "StatusInfrastBegin@CloseAnnos#next"
+        ]
+    },
+    "StatusInfrast": {
+        "baseTask": "Infrast",
+        "next": ["StatusInfrastOverview", "Status@InfrastLoading", "Status@CloseAnnos#next"]
+    },
+    "StatusInfrastOverview": {
+        "baseTask": "InfrastEnteredFlag",
+        "action": "Stop",
+        "next": []
+    },
+    "Status-OriginiteOcr": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "主界面/终端顶栏源石数量",
+        "roi": [980, 6, 85, 36],
+        "binThreshold": [0, 255]
+    },
+    "Status-OrundumOcr": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "主界面/终端顶栏合成玉数量",
+        "roi": [1088, 6, 100, 36],
+        "binThreshold": [0, 255]
+    },
+    "Status-LmdOcr": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "部分界面顶栏龙门币；主界面通常不可读，识别失败则省略",
+        "roi": [860, 6, 90, 36],
+        "binThreshold": [0, 255]
+    },
+    "Status-AnnihilationMapName": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "doc": "剿灭备战页左侧地图名",
+        "roi": [70, 70, 520, 90]
+    },
+    "Status-AnnihilationWeekly": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "剿灭备战页本周合成玉进度 x/cap",
+        "roi": [430, 620, 220, 50],
+        "useRaw": true
+    },
+    "Status-AnnihilationWeeklyAlt": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "备战页周进度备选区域（奖励条附近）",
+        "roi": [500, 450, 280, 80],
+        "useRaw": true
+    },
+    "Status-AnnihilationPrtsCards": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "全权委托按钮附近的常态事务代理卡数量",
+        "roi": [790, 545, 80, 40],
+        "binThreshold": [0, 255]
+    },
+    "Status-DronesOcr": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "基建总览顶栏无人机 current/max",
+        "roi": [1040, 0, 240, 50],
+        "useRaw": true
+    }
+}

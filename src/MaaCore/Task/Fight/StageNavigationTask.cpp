@@ -158,7 +158,8 @@ bool asst::StageNavigationTask::_run()
             return true;
         }
         else if (ret && task.get_last_task_name().ends_with("Annihilation@UnableToAgent2")) {
-            return false;
+            // Leave the stage-select screen as-is so AnnihilationPrecheckTask can report and apply on_no_record.
+            return true;
         }
         else {
             return ret;

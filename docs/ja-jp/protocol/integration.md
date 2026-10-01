@@ -264,6 +264,38 @@ Bilibili：`张三`、入力可能：`张三`、`张`、`三`
   <br>
   源石確認画面で待機し、現在の 1 ポイントの理智回復が完了するまで待ってから、すぐに源石を使用します。  
   :::  
+  ::: field on_no_card  
+  @type string
+  @default current
+  @optional
+  殲滅作戦（`Annihilation` および `*@Annihilation`）専用。PRTS 代理カードがないときの動作：
+  <br>
+  `current`（デフォルト、省略可）- 従来の戦闘フローを維持
+  <br>
+  `skip` - 今回の殲滅をスキップ。タスクチェーンは成功終了。コールバック `TaskResult.status=skipped`、`reason=NO_PRTS_CARD`
+  <br>
+  `fail` - 失敗、`reason=NO_PRTS_CARD`
+  <br>
+  `normal_deploy` - カードを使わず通常の代理指揮で出撃  
+  :::  
+  ::: field on_no_record  
+  @type string
+  @default current
+  @optional
+  殲滅専用。現在のマップに 400 キル満点記録がなく全権委託できないときの動作：
+  <br>
+  `current`（デフォルト）- 代理自体が不可能な場合（`UnableToAgent2`）のみ失敗。従来どおり
+  <br>
+  `skip` - スキップ、`reason=NO_FULL_RECORD`
+  <br>
+  `fail` - 全権委託が無ければ失敗、`reason=NO_FULL_RECORD`  
+  :::  
+  ::: field max_cards  
+  @type number
+  @default -1
+  @optional
+  殲滅専用。今回消費する PRTS 代理カードの上限。`-1` は無制限。  
+  :::  
   ::::
 
 <details>
@@ -1360,6 +1392,65 @@ Sarkaz テーマ、Investment モード、「破棘成金分隊」または「�
 
 </details>
 
+- `Status`  
+  読み取り専用のゲーム状態照会。ナビ以外に戦闘・受取・配置転換は行いません。結果は `SubTaskExtraInfo` の `what=GameStatus` で返ります。倉庫は `DepotInfo` も送出します。
+
+:::: field-group  
+::: field enable  
+@type boolean
+@default true
+@optional
+このタスクを有効にするかどうか。  
+:::  
+::: field fields  
+@type array<string>
+@optional
+取得するフィールドのリスト。`sanity` | `currency` / `orundum` / `originite` / `lmd` | `annihilation` | `depot` | `drones`。指定時は下記の boolean より優先。  
+:::  
+::: field sanity  
+@type boolean
+@default false
+@optional
+理智 current/max を読む。`fields` 未指定かつすべて false のときは sanity のみがデフォルト。  
+:::  
+::: field currency  
+@type boolean
+@default false
+@optional
+上部バーの合成玉 / 源石 / 龍門幣（読めるものだけ）。`orundum` / `originite` / `lmd` でも有効化。  
+:::  
+::: field annihilation  
+@type boolean
+@default false
+@optional
+殲滅準備画面でマップ名、週間進捗、満点記録、代理カード数を読む。  
+:::  
+::: field depot  
+@type boolean
+@default false
+@optional
+倉庫識別を再利用し、item_id → 数量を `GameStatus.depot` と `DepotInfo` に出す。  
+:::  
+::: field drones  
+@type boolean
+@default false
+@optional
+基地概要に入り（収穫はしない）、ドローン current/max を読む。  
+:::  
+::::
+
+<details>
+<summary>Example</summary>
+
+```json
+{
+   "enable": true,
+   "fields": ["sanity", "annihilation"]
+}
+```
+
+</details>
+
 - `OperBox`  
   オペレーター box 識別
 
@@ -1772,5 +1863,17 @@ AdbLite を使用するかどうか。可能な値："0" または "1"。列挙�
 @type string
 @optional
 クライアント種別（ゲームチャネル）。ほとんどの接続設定では不要です。`AsstConnect` / `AsstAsyncConnect` に渡す `config` が、接続時に実行するコマンド内で `[PackageName]` を使用する場合にのみ、接続前に `AsstSetInstanceOption(..., ClientType, ...)` を設定してください。現在の組み込み設定では、`Androws` と `WSA` の `displayId` 取得のみがこの値に依存します。このオプションは StartUp / CloseDown などのタスクパラメータ `client_type` を置き換えるものではありません。列挙値：6。  
+:::  
+::: field DelayMultiplier  
+@type string
+@default 1.0
+@optional
+グローバル遅延/タイムアウト倍率。文字列の浮動小数、範囲 `[0.1, 10]`。preDelay / postDelay、タスク間待機、戦闘開始タイムアウトを等比で伸ばします。デフォルト `1.0` は従来どおり。列挙値：7。  
+:::  
+::: field SaveFailureScreenshot  
+@type string
+@default 1
+@optional
+認識失敗でタスクが終わるときにユーザディレクトリ `debug/` へスクリーンショットを保存するか。`"1"` オン（デフォルト）、`"0"` オフ。列挙値：8。  
 :::  
 ::::

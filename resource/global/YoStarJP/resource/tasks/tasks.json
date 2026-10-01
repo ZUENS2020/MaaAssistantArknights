@@ -179,6 +179,9 @@
     "SignInEventEarnRewards": {
         "text": ["物資獲得", "物資", "獲得"]
     },
+    "DismissGainedItems": {
+        "text": ["物資獲得", "物資", "獲得"]
+    },
     "NoFriends": {
         "text": ["戦友があリませれ"]
     },

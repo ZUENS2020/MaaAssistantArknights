@@ -22,6 +22,9 @@ public:
     std::shared_ptr<Status> status() const;
     bool need_exit() const;
     bool sleep(unsigned millisecond) const;
+    double delay_multiplier() const;
+    bool save_failure_screenshot() const;
+    int scaled_timeout_seconds(int seconds) const;
 
     Assistant* inst() noexcept;
     std::string inst_string() const;

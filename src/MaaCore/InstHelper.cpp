@@ -1,8 +1,12 @@
 #include "InstHelper.h"
 
+#include <algorithm>
+#include <chrono>
 #include <sstream>
+#include <thread>
 
 #include "Assistant.h"
+#include "Common/DelayScaler.hpp"
 #include "Utils/Logger.hpp"
 
 asst::InstHelper::InstHelper(asst::Assistant* inst) :
@@ -34,6 +38,7 @@ bool asst::InstHelper::sleep(unsigned millisecond) const
         std::this_thread::yield();
         return true;
     }
+    millisecond = scale_delay_ms(millisecond, delay_multiplier());
     Log.trace("ready to sleep", millisecond);
     auto millisecond_ms = std::chrono::milliseconds(millisecond);
     auto interval = std::chrono::milliseconds(std::min(millisecond, 5000U));
@@ -47,6 +52,21 @@ bool asst::InstHelper::sleep(unsigned millisecond) const
     Log.trace("end of sleep", millisecond);
 
     return !need_exit();
+}
+
+double asst::InstHelper::delay_multiplier() const
+{
+    return m_inst ? m_inst->delay_multiplier() : DelayMultiplierDefault;
+}
+
+bool asst::InstHelper::save_failure_screenshot() const
+{
+    return m_inst ? m_inst->save_failure_screenshot() : true;
+}
+
+int asst::InstHelper::scaled_timeout_seconds(int seconds) const
+{
+    return scale_timeout_seconds(seconds, delay_multiplier());
 }
 
 asst::Assistant* asst::InstHelper::inst() noexcept
