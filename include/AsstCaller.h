@@ -64,6 +64,8 @@ extern "C"
     // 设置实例级参数。
     // InstanceOptionKey::ClientType 仅在所选连接配置的 connect 阶段命令依赖 [PackageName] 时需要预先设置；
     // 当前内置配置中仅 Androws / WSA 的 displayId 查询依赖该值。
+    // InstanceOptionKey::DelayMultiplier (7) 为延迟/超时倍率，字符串浮点数，默认 "1.0"。
+    // InstanceOptionKey::SaveFailureScreenshot (8) 为识别失败截图开关，"0" | "1"，默认 "1"。
     AsstBool ASSTAPI
         AsstSetInstanceOption(AsstHandle handle, AsstInstanceOptionKey key, const char* value);
 

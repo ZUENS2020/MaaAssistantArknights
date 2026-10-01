@@ -3989,4 +3989,14 @@ public enum InstanceOptionKey
     /// Indicates the client type (game channel) used for resolving PackageName on connect.
     /// </summary>
     ClientType = 6,
+
+    /// <summary>
+    /// Global delay/timeout multiplier. Value is a floating-point string, default "1.0", range [0.1, 10].
+    /// </summary>
+    DelayMultiplier = 7,
+
+    /// <summary>
+    /// Save a debug screenshot when recognition failure ends a task. "0" or "1", default "1".
+    /// </summary>
+    SaveFailureScreenshot = 8,
 }

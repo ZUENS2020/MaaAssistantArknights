@@ -264,6 +264,38 @@ B服：`张三`，可输入 `张三`、`张`、`三`
   <br>
   在碎石确认界面等待，直到当前的 1 点理智恢复完成后再立刻碎石。  
   :::  
+  ::: field on_no_card  
+  @type string
+  @default current
+  @optional
+  仅 `stage` 为剿灭（`Annihilation` 及 `*@Annihilation`）时生效。没有常态事务代理卡时的行为：
+  <br>
+  `current`（默认，可省略）- 保持原有作战流程
+  <br>
+  `skip` - 跳过本次剿灭，任务链成功结束，回调 `TaskResult.status=skipped`、`reason=NO_PRTS_CARD`
+  <br>
+  `fail` - 任务失败，`reason=NO_PRTS_CARD`
+  <br>
+  `normal_deploy` - 不用代理卡，改走普通代理指挥  
+  :::  
+  ::: field on_no_record  
+  @type string
+  @default current
+  @optional
+  仅剿灭时生效。当前地图没有 400 杀满分记录、无法全权委托时的行为：
+  <br>
+  `current`（默认，可省略）- 仅在完全无法代理（`UnableToAgent2`）时失败，与历史行为一致
+  <br>
+  `skip` - 跳过，`reason=NO_FULL_RECORD`
+  <br>
+  `fail` - 只要没有全权委托就失败，`reason=NO_FULL_RECORD`  
+  :::  
+  ::: field max_cards  
+  @type number
+  @default -1
+  @optional
+  仅剿灭时生效。本次最多消耗的常态事务代理卡数量。`-1` 表示不限制。  
+  :::  
   ::::
 
 <details>
@@ -1360,6 +1392,65 @@ Tag 等级（大于等于 3）和对应的希望招募时限，单位为分钟�
 
 </details>
 
+- `Status`  
+   只读游戏状态查询。除导航外不点击战斗、领取或换班。结果通过 `SubTaskExtraInfo` 的 `what=GameStatus` 回传；仓库字段同时复用 `DepotInfo`。
+
+:::: field-group  
+::: field enable  
+@type boolean
+@default true
+@optional
+是否启用本任务。  
+:::  
+::: field fields  
+@type array<string>
+@optional
+要采集的字段列表。可选项：`sanity` | `currency` / `orundum` / `originite` / `lmd` | `annihilation` | `depot` | `drones`。与下方布尔开关二选一；提供 `fields` 时以列表为准。  
+:::  
+::: field sanity  
+@type boolean
+@default false
+@optional
+读取理智 current/max。未指定 `fields` 且所有开关均为 false 时，默认只开 sanity。  
+:::  
+::: field currency  
+@type boolean
+@default false
+@optional
+读取顶栏合成玉 / 源石 / 龙门币（可读到的才输出）。`orundum`、`originite`、`lmd` 三个布尔写法等价于打开本开关。  
+:::  
+::: field annihilation  
+@type boolean
+@default false
+@optional
+进入剿灭备战页，读取地图名、本周进度、是否有满分记录、代理卡数量。  
+:::  
+::: field depot  
+@type boolean
+@default false
+@optional
+复用仓库识别，在 `GameStatus.depot` 与 `DepotInfo` 中输出 item_id → 数量。  
+:::  
+::: field drones  
+@type boolean
+@default false
+@optional
+进入基建总览（不收菜），读取无人机 current/max。  
+:::  
+::::
+
+<details>
+<summary>Example</summary>
+
+```json
+{
+   "enable": true,
+   "fields": ["sanity", "annihilation"]
+}
+```
+
+</details>
+
 - `OperBox`  
    干员 box 识别
 
@@ -1772,5 +1863,17 @@ AsstBool ASSTAPI AsstSetInstanceOption(AsstHandle handle, AsstInstanceOptionKey 
 @type string
 @optional
 客户端类型（游戏渠道）。大多数连接配置不需要设置。仅当传给 `AsstConnect` / `AsstAsyncConnect` 的 `config` 在连接阶段命令里使用 `[PackageName]` 时，才需要在连接前调用 `AsstSetInstanceOption(..., ClientType, ...)`。当前内置配置仅 `Androws` 和 `WSA` 的 `displayId` 查询依赖该值。该选项不替代 StartUp / CloseDown 等任务参数里的 `client_type`。枚举值：6。  
+:::  
+::: field DelayMultiplier  
+@type string
+@default 1.0
+@optional
+全局延迟/超时倍率，字符串浮点数，范围 `[0.1, 10]`。会等比放大 preDelay / postDelay、任务间等待，以及战斗开始等待超时。默认 `1.0`，行为与原先一致。枚举值：7。  
+:::  
+::: field SaveFailureScreenshot  
+@type string
+@default 1
+@optional
+识别失败导致任务结束时，是否把当前截图写到用户目录 `debug/`。`"1"` 开（默认，与原先 InterfaceTask 失败截图一致，并在 ProcessTask 识别耗尽时额外保存），`"0"` 关。枚举值：8。  
 :::  
 ::::

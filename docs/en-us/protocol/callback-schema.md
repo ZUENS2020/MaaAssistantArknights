@@ -189,6 +189,8 @@ Todo
   Auto Stationary Security Service
 - `Depot`  
   Depot recognition
+- `Status`  
+  Read-only game status
 - `OperBox`  
   Operator box recognition
 - `Reclamation`  
@@ -567,6 +569,53 @@ Todo
   // Corresponding details field example
   "done": bool,   // Whether recognition is complete, false means still in progress (data during process)
   "data": "{\"2001\":18000,\"31043\":317}"  // JSON string, format: {"itemId": quantity, ...}
+  ```
+
+- `GameStatus`  
+  Read-only `Status` task result. Only requested fields are present; failed fields are listed in `errors` while the task chain still succeeds.
+
+  ```json
+  {
+    "sanity": { "current": 100, "max": 135, "next_full_at": 1710000000 },
+    "orundum": 12345,
+    "originite": 67,
+    "lmd": 890000,
+    "annihilation": {
+      "map_name": "string",
+      "weekly_progress": 370,
+      "weekly_cap": 1800,
+      "record_full": true,
+      "prts_cards": 3
+    },
+    "depot": { "30012": 43 },
+    "drones": { "current": 120, "max": 200 },
+    "errors": ["drones"]
+  }
+  ```
+
+- `AnnihilationStatus`  
+  Annihilation prep-page status, emitted before `Fight` with an annihilation stage.
+
+  ```json
+  {
+    "map_name": "string",
+    "weekly_progress": 370,
+    "weekly_cap": 1800,
+    "record_full": true,
+    "can_agent": true,
+    "unable_to_agent": false,
+    "prts_cards": 3
+  }
+  ```
+
+- `TaskResult`  
+  Machine-readable skip/fail/success so wrappers can tell skipped from succeeded.
+
+  ```json
+  {
+    "status": "succeeded|failed|skipped",
+    "reason": "NO_PRTS_CARD|NO_FULL_RECORD|WEEKLY_CAP_REACHED|MAX_CARDS_REACHED|RECOGNITION_FAILED"
+  }
   ```
 
 - `OperBoxInfo`  

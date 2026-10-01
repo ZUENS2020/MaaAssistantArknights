@@ -13,7 +13,9 @@
 #include "Config/TaskData.h"
 #include "Controller/Controller.h"
 #include "Status.h"
+#include "Utils/DebugImageHelper.hpp"
 #include "Utils/Logger.hpp"
+#include "Utils/Platform.hpp"
 #include "Vision/Miscellaneous/PipelineAnalyzer.h"
 
 using namespace asst;
@@ -50,7 +52,7 @@ bool is_main_screen_recognition(const std::string& name)
 {
     // 任务链中位于主界面的入口
     if (name == "Award" || name == "Mall" || name == "Visit" || name == "Infrast" || name == "Recruit" ||
-        name == "Fight" || name == "Depot" || name == "OperBox" || name == "Gacha") {
+        name == "Fight" || name == "Depot" || name == "OperBox" || name == "Gacha" || name == "Status") {
         return true;
     }
     // 主界面入口按钮及其主题变体
@@ -467,6 +469,20 @@ std::pair<ProcessTask::NodeStatus, TaskConstPtr> ProcessTask::find_and_run_task(
     }
 
     if (hits.task_ptr == nullptr) {
+        if (save_failure_screenshot()) {
+            auto image = m_reusable.empty() ? (ctrler() ? ctrler()->get_image_cache() : cv::Mat()) : m_reusable;
+            if (image.empty() && ctrler()) {
+                image = ctrler()->get_image();
+            }
+            if (!image.empty()) {
+                utils::save_debug_image(
+                    image,
+                    utils::path("debug") / utils::path(std::string(m_task_chain)),
+                    true,
+                    "recognition failure",
+                    m_last_task_name.empty() ? "retry_failed" : m_last_task_name);
+            }
+        }
         return { NodeStatus::RetryFailed, nullptr };
     }
     else {

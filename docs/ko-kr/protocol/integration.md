@@ -248,6 +248,38 @@ v6.8.0부터 폐기됨. 대신 `medicine_expire_days`를 사용하세요.
 <br>
 오리지늄 사용 확인 창에서 대기하다가, 현재 1이성이 회복되면 즉시 오리지늄을 사용  
  :::  
+ ::: field on_no_card  
+ @type string
+@default current
+@optional
+섬멸 작전(`Annihilation` 및 `*@Annihilation`)에서만 유효. PRTS 대리 카드가 없을 때:
+<br>
+`current`(기본, 생략 가능) - 기존 전투 흐름 유지
+<br>
+`skip` - 이번 섬멸을 건너뛰고 성공 종료. 콜백 `TaskResult.status=skipped`, `reason=NO_PRTS_CARD`
+<br>
+`fail` - 실패, `reason=NO_PRTS_CARD`
+<br>
+`normal_deploy` - 카드 없이 일반 대리 지휘  
+ :::  
+ ::: field on_no_record  
+ @type string
+@default current
+@optional
+섬멸 전용. 현재 맵에 400킬 만점 기록이 없어 전권 위탁을 쓸 수 없을 때:
+<br>
+`current`(기본) - 대리가 완전히 불가능할 때만 실패(`UnableToAgent2`), 기존과 동일
+<br>
+`skip` - 건너뜀, `reason=NO_FULL_RECORD`
+<br>
+`fail` - 전권 위탁이 없으면 실패, `reason=NO_FULL_RECORD`  
+ :::  
+ ::: field max_cards  
+ @type number
+@default -1
+@optional
+섬멸 전용. 이번 실행에서 쓸 PRTS 대리 카드 상한. `-1` 은 무제한.  
+ :::  
  ::::
 
 <details>
@@ -1345,6 +1377,65 @@ Sarkaz 테마, Investment 모드, "연금술 분대" 또는 "지원 분대"일 �
 
 </details>
 
+- `Status`  
+   읽기 전용 게임 상태 조회. 탐색 외에 전투/수령/교대는 하지 않습니다. 결과는 `SubTaskExtraInfo` 의 `what=GameStatus` 로 전달되며, 창고는 `DepotInfo` 도 보냅니다.
+
+:::: field-group  
+::: field enable  
+@type boolean
+@default true
+@optional
+본 작업 활성화 여부  
+:::  
+::: field fields  
+@type array<string>
+@optional
+수집할 필드. `sanity` | `currency` / `orundum` / `originite` / `lmd` | `annihilation` | `depot` | `drones`. 있으면 boolean 스위치보다 우선합니다.  
+:::  
+::: field sanity  
+@type boolean
+@default false
+@optional
+이성 current/max. `fields` 가 없고 스위치가 모두 false 이면 기본으로 sanity 만 켭니다.  
+:::  
+::: field currency  
+@type boolean
+@default false
+@optional
+상단 합성옥 / 오리지늄 / 용문폐(읽을 수 있는 것만). `orundum` / `originite` / `lmd` 도 동일.  
+:::  
+::: field annihilation  
+@type boolean
+@default false
+@optional
+섬멸 준비 화면에서 맵 이름, 주간 진행, 만점 기록, 대리 카드 수를 읽습니다.  
+:::  
+::: field depot  
+@type boolean
+@default false
+@optional
+창고 인식을 재사용하고 item_id → 수량을 `GameStatus.depot` 와 `DepotInfo` 로 냅니다.  
+:::  
+::: field drones  
+@type boolean
+@default false
+@optional
+기반시설 개요만 열고(수확 없음) 드론 current/max 를 읽습니다.  
+:::  
+::::
+
+<details>
+<summary>Example</summary>
+
+```json
+{
+   "enable": true,
+   "fields": ["sanity", "annihilation"]
+}
+```
+
+</details>
+
 - `OperBox`  
    오퍼레이터 인식
 
@@ -1757,5 +1848,17 @@ AdbLite 사용 여부. 옵션: "0" 끄기, "1" 켜기. 열거값: 4
 @type string
 @optional
 클라이언트 종류(게임 채널). 대부분의 연결 설정에서는 필요하지 않습니다. `AsstConnect` / `AsstAsyncConnect` 에 전달하는 `config` 가 연결 단계에서 실행되는 명령에 `[PackageName]` 을 사용할 때만, 연결 전에 `AsstSetInstanceOption(..., ClientType, ...)` 를 호출해 설정해야 합니다. 현재 내장 설정 중에서는 `Androws` 와 `WSA` 의 `displayId` 조회만 이 값에 의존합니다. 이 옵션은 StartUp / CloseDown 등의 작업 파라미터 `client_type` 를 대체하지 않습니다. 열거값: 6  
+:::  
+::: field DelayMultiplier  
+@type string
+@default 1.0
+@optional
+전역 지연/타임아웃 배율. 문자열 부동소수점, 범위 `[0.1, 10]`. preDelay / postDelay, 작업 간 대기, 전투 시작 타임아웃을 같은 비율로 늘립니다. 기본 `1.0` 은 기존과 같습니다. 열거값: 7  
+:::  
+::: field SaveFailureScreenshot  
+@type string
+@default 1
+@optional
+인식 실패로 작업이 끝날 때 사용자 디렉터리 `debug/` 에 스크린샷을 저장할지. `"1"` 켜기(기본), `"0"` 끄기. 열거값: 8  
 :::  
 ::::

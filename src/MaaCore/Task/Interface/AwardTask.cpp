@@ -30,12 +30,27 @@ asst::AwardTask::AwardTask(const AsstCallback& callback, Assistant* inst) :
 
     award_task_ptr->register_plugin<ScreenshotTaskPlugin>();
 
+    auto make_dismiss = [this]() {
+        auto ptr = std::make_shared<ProcessTask>(m_callback, m_inst, TaskType);
+        ptr->set_tasks({ "AwardInterludeDismiss" });
+        ptr->set_ignore_error(true);
+        ptr->set_retry_times(8);
+        return ptr;
+    };
+
+    // Dismiss late "获得物资" / announcement popups before the next Award sub-step tries to go home.
     m_subtasks.emplace_back(award_task_ptr);
+    m_subtasks.emplace_back(make_dismiss());
     m_subtasks.emplace_back(mail_task_ptr);
+    m_subtasks.emplace_back(make_dismiss());
     m_subtasks.emplace_back(recruit_task_ptr);
+    m_subtasks.emplace_back(make_dismiss());
     m_subtasks.emplace_back(orundum_task_ptr);
+    m_subtasks.emplace_back(make_dismiss());
     m_subtasks.emplace_back(mining_task_ptr);
+    m_subtasks.emplace_back(make_dismiss());
     m_subtasks.emplace_back(specialaccess_task_ptr);
+    m_subtasks.emplace_back(make_dismiss());
     m_subtasks.emplace_back(signinevent_task_ptr);
 }
 

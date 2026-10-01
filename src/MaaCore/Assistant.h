@@ -126,6 +126,10 @@ public:
 
     bool need_exit() const { return m_thread_idle && m_running; }
 
+    double delay_multiplier() const { return m_delay_multiplier; }
+
+    bool save_failure_screenshot() const { return m_save_failure_screenshot; }
+
 private:
     void append_callback(AsstMsg msg, const json::value& detail);
     static void append_callback_for_inst(AsstMsg msg, const json::value& detail, Assistant* inst);
@@ -236,5 +240,8 @@ private:
     std::thread m_msg_thread;
     std::thread m_call_thread;
     std::thread m_working_thread;
+
+    double m_delay_multiplier = 1.0;
+    bool m_save_failure_screenshot = true;
 };
 } // namespace asst

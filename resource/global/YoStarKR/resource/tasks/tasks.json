@@ -278,6 +278,9 @@
     "SignInEventEarnRewards": {
         "text": ["물자획득"]
     },
+    "DismissGainedItems": {
+        "text": ["물자획득"]
+    },
     "NoFriends": {
         "text": ["등록된", "없습니다"]
     },

@@ -12,6 +12,8 @@ class StageNavigationTask;
 class DrGrandetTaskPlugin;
 class SideStoryReopenTask;
 class MedicineCounterTaskPlugin;
+class AnnihilationPrecheckTask;
+class AnnihilationControlPlugin;
 
 class FightTask final : public InterfaceTask
 {
@@ -26,11 +28,13 @@ public:
 protected:
     std::shared_ptr<ProcessTask> m_start_up_task_ptr = nullptr;
     std::shared_ptr<StageNavigationTask> m_stage_navigation_task_ptr = nullptr;
+    std::shared_ptr<AnnihilationPrecheckTask> m_annihilation_precheck_ptr = nullptr;
     std::shared_ptr<ProcessTask> m_fight_task_ptr = nullptr;
     std::shared_ptr<FightTimesTaskPlugin> m_fight_times_prt = nullptr;
     std::shared_ptr<MedicineCounterTaskPlugin> m_medicine_plugin = nullptr;
     std::shared_ptr<StageDropsTaskPlugin> m_stage_drops_plugin_ptr = nullptr;
     std::shared_ptr<DrGrandetTaskPlugin> m_dr_grandet_task_plugin_ptr = nullptr;
     std::shared_ptr<SideStoryReopenTask> m_sidestory_reopen_task_ptr = nullptr;
+    std::shared_ptr<AnnihilationControlPlugin> m_annihilation_control_ptr = nullptr;
 };
 }

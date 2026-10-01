@@ -196,6 +196,9 @@
     "SignInEventEarnRewards": {
         "text": ["獲得物資"]
     },
+    "DismissGainedItems": {
+        "text": ["獲得物資"]
+    },
     "NoFriends": {
         "text": ["暫無好友"]
     },

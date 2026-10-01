@@ -1,8 +1,12 @@
 #include "FightTask.h"
 
+#include <algorithm>
 #include <utility>
 
+#include "Common/TaskReason.hpp"
 #include "Config/TaskData.h"
+#include "Task/Fight/AnnihilationControlPlugin.h"
+#include "Task/Fight/AnnihilationPrecheckTask.h"
 #include "Task/Fight/DrGrandetTaskPlugin.h"
 #include "Task/Fight/FightTimesTaskPlugin.h"
 #include "Task/Fight/MedicineCounterTaskPlugin.h"
@@ -18,6 +22,7 @@ asst::FightTask::FightTask(const AsstCallback& callback, Assistant* inst) :
     InterfaceTask(callback, inst, TaskType),
     m_start_up_task_ptr(std::make_shared<ProcessTask>(m_callback, m_inst, TaskType)),
     m_stage_navigation_task_ptr(std::make_shared<StageNavigationTask>(m_callback, m_inst, TaskType)),
+    m_annihilation_precheck_ptr(std::make_shared<AnnihilationPrecheckTask>(m_callback, m_inst, TaskType)),
     m_fight_task_ptr(std::make_shared<ProcessTask>(m_callback, m_inst, TaskType)),
     m_sidestory_reopen_task_ptr(std::make_shared<SideStoryReopenTask>(m_callback, m_inst, TaskType))
 {
@@ -55,9 +60,15 @@ asst::FightTask::FightTask(const AsstCallback& callback, Assistant* inst) :
     m_fight_times_prt = m_fight_task_ptr->register_plugin<FightTimesTaskPlugin>();
     m_fight_times_prt->set_retry_times(3);
     m_medicine_plugin = m_fight_task_ptr->register_plugin<MedicineCounterTaskPlugin>();
+    m_annihilation_control_ptr = m_fight_task_ptr->register_plugin<AnnihilationControlPlugin>();
+    m_annihilation_control_ptr->set_enable(false);
+
+    m_annihilation_precheck_ptr->set_fight_task_ptr(m_fight_task_ptr);
+    m_annihilation_precheck_ptr->set_enable(false).set_retry_times(0);
 
     m_subtasks.emplace_back(m_start_up_task_ptr);
     m_subtasks.emplace_back(m_stage_navigation_task_ptr);
+    m_subtasks.emplace_back(m_annihilation_precheck_ptr);
     m_subtasks.emplace_back(m_fight_task_ptr);
     m_subtasks.emplace_back(m_sidestory_reopen_task_ptr);
 }
@@ -158,6 +169,7 @@ bool asst::FightTask::set_params(const json::value& params)
     if (times == 0) {
         m_start_up_task_ptr->set_enable(false);
         m_stage_navigation_task_ptr->set_enable(false);
+        m_annihilation_precheck_ptr->set_enable(false);
         m_fight_task_ptr->set_enable(false);
         m_sidestory_reopen_task_ptr->set_enable(false);
     }
@@ -189,6 +201,43 @@ bool asst::FightTask::set_params(const json::value& params)
     m_sidestory_reopen_task_ptr->set_penguin_id(std::move(penguin_id));
     m_sidestory_reopen_task_ptr->set_enable_yituliu(enable_yituliu);
     m_sidestory_reopen_task_ptr->set_server(server);
+
+    OnNoCardAction on_no_card = OnNoCardAction::Current;
+    if (auto opt = params.find<std::string>("on_no_card")) {
+        if (!parse_on_no_card(*opt, on_no_card)) {
+            Log.error(__FUNCTION__, "Invalid on_no_card", *opt);
+            return false;
+        }
+    }
+    OnNoRecordAction on_no_record = OnNoRecordAction::Current;
+    if (auto opt = params.find<std::string>("on_no_record")) {
+        if (!parse_on_no_record(*opt, on_no_record)) {
+            Log.error(__FUNCTION__, "Invalid on_no_record", *opt);
+            return false;
+        }
+    }
+    const int max_cards = params.get("max_cards", -1);
+    if (max_cards < -1) {
+        Log.error(__FUNCTION__, "Invalid max_cards", max_cards);
+        return false;
+    }
+
+    const bool annihilation = is_annihilation_stage(stage);
+    m_annihilation_precheck_ptr->set_on_no_card(on_no_card);
+    m_annihilation_precheck_ptr->set_on_no_record(on_no_record);
+    m_annihilation_precheck_ptr->set_max_cards(max_cards);
+    m_annihilation_control_ptr->set_on_no_card(on_no_card);
+    m_annihilation_control_ptr->set_max_cards(max_cards);
+    m_annihilation_control_ptr->set_enable(annihilation && times != 0);
+
+    if (annihilation && max_cards >= 0 && on_no_card != OnNoCardAction::NormalDeploy) {
+        const int capped = std::min(times, max_cards);
+        m_fight_task_ptr->set_times_limit("StartButton1", capped).set_times_limit("StartButton2", capped);
+    }
+
+    if (!m_running) {
+        m_annihilation_precheck_ptr->set_enable(annihilation && times != 0);
+    }
 
     return true;
 }

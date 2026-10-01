@@ -13,6 +13,8 @@ public:
     using AbstractTask::AbstractTask;
     virtual ~DepotRecognitionTask() noexcept override = default;
 
+    const std::unordered_map<std::string, ItemInfo>& get_items() const noexcept { return m_all_items; }
+
 protected:
     virtual bool _run() override;
 

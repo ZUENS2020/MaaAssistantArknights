@@ -32,6 +32,22 @@ add_executable(maa-algorithm-test
 
 target_compile_features(maa-algorithm-test PRIVATE cxx_std_20)
 target_link_libraries(maa-algorithm-test PRIVATE Catch2::Catch2WithMain)
-target_include_directories(maa-algorithm-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/MaaCore)
+target_include_directories(maa-algorithm-test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/MaaCore
+    ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/include
+)
 
 catch_discover_tests(maa-algorithm-test TEST_PREFIX "algorithm::")
+
+add_executable(maa-status-helpers-test
+    MaaCore/StatusHelpersTest.cpp
+)
+
+target_compile_features(maa-status-helpers-test PRIVATE cxx_std_20)
+target_link_libraries(maa-status-helpers-test PRIVATE Catch2::Catch2WithMain)
+target_include_directories(maa-status-helpers-test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/MaaCore
+    ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/include
+)
+
+catch_discover_tests(maa-status-helpers-test TEST_PREFIX "status::")
