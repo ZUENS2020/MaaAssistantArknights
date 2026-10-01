@@ -15,6 +15,26 @@ option(WITH_MAC_SCK "build with macOS ScreenCaptureKit" ${APPLE})
 option(WITH_HASH_VERSION "generate version from git hash" OFF)
 option(BUILD_RESOURCE_UPDATER "build resource updater tool" OFF)
 
+# version.cmake in MaaUtils keys off ENABLE_HASH_VERSION; publish presets set WITH_HASH_VERSION.
+# Prefer an explicit -DMAA_HASH_VERSION (CI / ark-dev tags). Otherwise git describe so the
+# embedded AsstGetVersion() is not DEBUG_VERSION.
+if(WITH_HASH_VERSION)
+    set(ENABLE_HASH_VERSION ON)
+    if(NOT DEFINED MAA_HASH_VERSION OR MAA_HASH_VERSION STREQUAL "DEBUG_VERSION")
+        execute_process(
+            COMMAND git describe --tags --always --dirty
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE _maa_git_describe
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET)
+        if(_maa_git_describe)
+            set(MAA_HASH_VERSION
+                "${_maa_git_describe}"
+                CACHE STRING "maa version" FORCE)
+        endif()
+    endif()
+endif()
+
 if(INSTALL_FLATTEN)
     set(RPATH_LIBRARY_INSTALL_DIR .)
     set(MaaCore_install_flatten_args RUNTIME DESTINATION . LIBRARY DESTINATION . PUBLIC_HEADER DESTINATION .)

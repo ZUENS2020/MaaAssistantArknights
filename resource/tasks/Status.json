@@ -62,12 +62,14 @@
         ]
     },
     "StatusTerminalEntry": {
-        "doc": "只点终端入口，不走「前往上一次作战」",
+        "doc": "只点终端入口，不走「前往上一次作战」。explicit baseTask 不继承 template，须与 Fight 一致",
         "baseTask": "Fight",
+        "template": "SwitchTheme@ToggleSettingsMenu.png",
         "next": ["StatusAtTerminal", "StatusEnterTerminal@CloseAnnos#next", "StatusEnterTerminal@ReturnButtons#next"]
     },
     "StatusAtTerminal": {
         "baseTask": "GoTerminalStopflag",
+        "template": "StageResource.png",
         "action": "Stop"
     },
     "StatusAnnihilationBegin": {
@@ -81,8 +83,9 @@
         ]
     },
     "StatusAnnihilation": {
-        "doc": "点进剿灭备战页后停在检查模板上，不点开始行动",
+        "doc": "点进剿灭备战页后停在检查模板上，不点开始行动。explicit baseTask 不继承 template，须与 Annihilation 一致",
         "baseTask": "Annihilation",
+        "template": "StageAnnihilation.png",
         "next": [
             "#self",
             "UsePrts-AnnihilationSuccessCheck",
@@ -104,10 +107,12 @@
     },
     "StatusInfrast": {
         "baseTask": "Infrast",
+        "template": "SwitchTheme@ToggleSettingsMenu.png",
         "next": ["StatusInfrastOverview", "Status@InfrastLoading", "Status@CloseAnnos#next"]
     },
     "StatusInfrastOverview": {
         "baseTask": "InfrastEnteredFlag",
+        "template": "InfrastOverview.png",
         "action": "Stop",
         "next": []
     },

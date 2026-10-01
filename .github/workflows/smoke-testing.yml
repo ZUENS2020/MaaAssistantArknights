@@ -17,6 +17,8 @@ on:
       - "src/MaaCore/**"
       - "tools/maadeps-download.py"
       - "tools/SmokeTesting/**"
+      - "tools/check_task_templates.py"
+      - "tools/check_resource_load.py"
       - "!**/*.md"
   pull_request:
     paths:
@@ -30,6 +32,8 @@ on:
       - "src/MaaCore/**"
       - "tools/maadeps-download.py"
       - "tools/SmokeTesting/**"
+      - "tools/check_task_templates.py"
+      - "tools/check_resource_load.py"
       - "!**/*.md"
   workflow_dispatch:
 
@@ -38,8 +42,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  template-check:
+    name: Check task templates exist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          show-progress: false
+
+      - name: Check task templates
+        run: python3 tools/check_task_templates.py
+
   smoke-testing:
     name: Run Smoke Test
+    needs: template-check
     runs-on: macos-latest
     steps:
       - name: Checkout repository

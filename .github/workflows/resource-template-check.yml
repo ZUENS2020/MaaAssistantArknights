@@ -1,0 +1,39 @@
+name: Resource Template Check
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - "dev-v2"
+    paths:
+      - ".github/workflows/resource-template-check.yml"
+      - "resource/tasks/**"
+      - "resource/template/**"
+      - "tools/check_task_templates.py"
+      - "tools/check_resource_load.py"
+  pull_request:
+    paths:
+      - ".github/workflows/resource-template-check.yml"
+      - "resource/tasks/**"
+      - "resource/template/**"
+      - "tools/check_task_templates.py"
+      - "tools/check_resource_load.py"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  template-check:
+    name: MatchTemplate files exist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          show-progress: false
+
+      - name: Check task templates
+        run: python3 tools/check_task_templates.py
