@@ -41,7 +41,7 @@ private:
     bool recognize_annihilation(json::object& details);
     bool recognize_drones(json::object& details);
     bool recognize_depot(json::object& details);
-    void emit_status(const json::object& details) const;
+    void emit_status(const json::object& details);
 
     Params m_params;
 };

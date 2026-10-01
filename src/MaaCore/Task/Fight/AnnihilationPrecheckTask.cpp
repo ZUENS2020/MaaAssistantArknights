@@ -22,7 +22,7 @@ bool asst::AnnihilationPrecheckTask::_run()
     return apply_policies();
 }
 
-void asst::AnnihilationPrecheckTask::emit_status() const
+void asst::AnnihilationPrecheckTask::emit_status()
 {
     json::value info = basic_info_with_what(std::string(task_reason::WhatAnnihilationStatus));
     auto& details = info["details"].as_object();

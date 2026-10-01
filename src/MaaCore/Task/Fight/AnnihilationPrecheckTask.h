@@ -31,7 +31,7 @@ protected:
     virtual bool _run() override;
 
 private:
-    void emit_status() const;
+    void emit_status();
     bool apply_policies();
 
     std::shared_ptr<ProcessTask> m_fight_task_ptr = nullptr;

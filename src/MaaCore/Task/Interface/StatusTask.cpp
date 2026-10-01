@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "Common/TaskResult.hpp"
+#include "Controller/Controller.h"
 #include "Task/Fight/FightTimesTaskPlugin.h"
 #include "Task/Miscellaneous/DepotRecognitionTask.h"
 #include "Task/ProcessTask.h"
@@ -299,7 +300,7 @@ bool asst::StatusTask::recognize_depot(json::object& details)
     return true;
 }
 
-void asst::StatusTask::emit_status(const json::object& details) const
+void asst::StatusTask::emit_status(const json::object& details)
 {
     json::value info = basic_info_with_what(std::string(task_reason::WhatGameStatus));
     info["details"] = details;
