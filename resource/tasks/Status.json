@@ -77,10 +77,16 @@
         "next": [
             "StatusAnnihilation",
             "StatusAnnihilationBegin@QuickSwitch@ToTerminal#next",
-            "StatusTerminalEntry",
+            "StatusAnnihilationTerminalEntry",
             "StatusAnnihilationBegin@ReturnButtons#next",
             "StatusAnnihilationBegin@CloseAnnos#next"
         ]
+    },
+    "StatusAnnihilationTerminalEntry": {
+        "doc": "从主界面点终端后继续点 To-Do 里的剿灭（StatusTerminalEntry 会停在终端，不能复用）",
+        "baseTask": "Fight",
+        "template": "SwitchTheme@ToggleSettingsMenu.png",
+        "next": ["StatusAnnihilation", "StatusAnnihilationBegin@CloseAnnos#next", "StatusAnnihilationBegin@ReturnButtons#next"]
     },
     "StatusAnnihilation": {
         "doc": "点进剿灭备战页后停在检查模板上，不点开始行动。explicit baseTask 不继承 template，须与 Annihilation 一致",
@@ -119,7 +125,7 @@
     "Status-SanityHomeCurrentOcr": {
         "baseTask": "NumberOcrReplace",
         "doc": "主界面「终端」按钮左侧当前理智大号数字",
-        "roi": [770, 136, 115, 80],
+        "roi": [788, 136, 95, 80],
         "binThreshold": [0, 255]
     },
     "Status-SanityHomeMaxOcr": {
@@ -131,8 +137,8 @@
     "Status-OriginiteOcr": {
         "baseTask": "NumberOcrReplace",
         "doc": "主界面顶栏源石数量（CN 2026-10 UI 实机校准）",
-        "roi": [1118, 44, 60, 34],
-        "binThreshold": [0, 255]
+        "roi": [1116, 40, 42, 42],
+        "useRaw": true
     },
     "Status-OrundumOcr": {
         "baseTask": "NumberOcrReplace",

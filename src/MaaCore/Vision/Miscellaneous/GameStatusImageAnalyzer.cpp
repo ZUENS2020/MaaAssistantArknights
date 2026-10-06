@@ -33,8 +33,13 @@ std::optional<int> asst::GameStatusImageAnalyzer::analyze_number(const cv::Mat& 
     }
     std::string text = res_opt->text;
     strip_ocr_noise(text);
+    // Top-bar numbers sit right before a "+" button whose position moves with the digit count;
+    // tolerate trailing non-digit noise from it ("0+" / "1305U").
+    while (!text.empty() && (text.back() < '0' || text.back() > '9')) {
+        text.pop_back();
+    }
     int value = 0;
-    if (!utils::chars_to_number(text, value) || value < 0) {
+    if (text.empty() || !utils::chars_to_number(text, value) || value < 0) {
         Log.info(__FUNCTION__, "number parse failed", task_name, res_opt->text);
         return std::nullopt;
     }
