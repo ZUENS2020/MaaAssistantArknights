@@ -216,6 +216,24 @@ bool asst::FightTask::set_params(const json::value& params)
             return false;
         }
     }
+    OnCapReachedAction on_cap_reached = OnCapReachedAction::Skip;
+    if (auto opt = params.find<std::string>("on_cap_reached")) {
+        if (!parse_on_cap_reached(*opt, on_cap_reached)) {
+            Log.error(__FUNCTION__, "Invalid on_cap_reached", *opt);
+            return false;
+        }
+    }
+    // Test-only hook (documented): {"prts_cards": 0, "weekly_progress": 1800}
+    std::optional<int> override_cards;
+    std::optional<int> override_weekly;
+    if (auto opt = params.find("annihilation_test_override"); opt && opt->is_object()) {
+        if (auto v = opt->find<int>("prts_cards")) {
+            override_cards = *v;
+        }
+        if (auto v = opt->find<int>("weekly_progress")) {
+            override_weekly = *v;
+        }
+    }
     const int max_cards = params.get("max_cards", -1);
     if (max_cards < -1) {
         Log.error(__FUNCTION__, "Invalid max_cards", max_cards);
@@ -226,6 +244,8 @@ bool asst::FightTask::set_params(const json::value& params)
     m_annihilation_precheck_ptr->set_on_no_card(on_no_card);
     m_annihilation_precheck_ptr->set_on_no_record(on_no_record);
     m_annihilation_precheck_ptr->set_max_cards(max_cards);
+    m_annihilation_precheck_ptr->set_on_cap_reached(on_cap_reached);
+    m_annihilation_precheck_ptr->set_status_override(override_cards, override_weekly);
     m_annihilation_control_ptr->set_on_no_card(on_no_card);
     m_annihilation_control_ptr->set_max_cards(max_cards);
     m_annihilation_control_ptr->set_enable(annihilation && times != 0);

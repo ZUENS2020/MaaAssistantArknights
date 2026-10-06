@@ -76,6 +76,30 @@ inline bool parse_on_no_record(std::string_view value, OnNoRecordAction& out)
     return false;
 }
 
+enum class OnCapReachedAction
+{
+    Skip, // default: weekly orundum cap already reached -> do not fight Annihilation
+    Current, // keep fighting (historical behaviour, report only)
+    Fail,
+};
+
+inline bool parse_on_cap_reached(std::string_view value, OnCapReachedAction& out)
+{
+    if (value.empty() || value == "skip" || value == "default") {
+        out = OnCapReachedAction::Skip;
+        return true;
+    }
+    if (value == "current" || value == "ignore" || value == "continue") {
+        out = OnCapReachedAction::Current;
+        return true;
+    }
+    if (value == "fail") {
+        out = OnCapReachedAction::Fail;
+        return true;
+    }
+    return false;
+}
+
 inline bool is_annihilation_stage(std::string_view stage)
 {
     return stage == "Annihilation" || stage.ends_with("@Annihilation");

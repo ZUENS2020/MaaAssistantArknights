@@ -50,6 +50,27 @@ inline std::optional<SlashCount> parse_slash_count(std::string_view text)
     return SlashCount { .current = current, .max = max };
 }
 
+// Parse the number after the last '/' (e.g. "理智/205" or "/205" -> 205); falls back to the
+// whole string when there is no slash. Used for the home-screen sanity max label.
+inline std::optional<int> parse_trailing_number(std::string_view text)
+{
+    std::string cleaned(text);
+    strip_ocr_noise(cleaned);
+    const auto slash_pos = cleaned.rfind('/');
+    std::string_view digits = cleaned;
+    if (slash_pos != std::string::npos) {
+        digits = std::string_view(cleaned).substr(slash_pos + 1);
+    }
+    if (digits.empty()) {
+        return std::nullopt;
+    }
+    int value = 0;
+    if (!utils::chars_to_number(digits, value) || value < 0) {
+        return std::nullopt;
+    }
+    return value;
+}
+
 inline std::optional<SlashCount> pick_weekly_progress(const std::vector<SlashCount>& hits)
 {
     for (const auto& hit : hits) {

@@ -611,7 +611,14 @@ void Assistant::working_proc()
             bool ret = false;
             TaskExceptionKind exception_kind = TaskExceptionKind::None;
             try {
-                ret = task_ptr->run();
+                if (!inited()) [[unlikely]] {
+                    // Connection failed (or never happened): running a task would dereference a dead controller.
+                    Log.error("controller not connected, refusing to run task", task_ptr->get_task_chain());
+                    ret = false;
+                }
+                else {
+                    ret = task_ptr->run();
+                }
             }
             catch (const cv::Exception& e) {
                 if (e.code == cv::Error::StsNoMem) {

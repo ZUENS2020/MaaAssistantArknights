@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "Common/TaskReason.hpp"
 #include "Task/AbstractTask.h"
 #include "Vision/Miscellaneous/GameStatusImageAnalyzer.h"
@@ -25,6 +27,15 @@ public:
 
     void set_max_cards(int max_cards) noexcept { m_max_cards = max_cards; }
 
+    void set_on_cap_reached(OnCapReachedAction action) noexcept { m_on_cap_reached = action; }
+
+    // Test hook: replace OCR results before the policies run (e.g. simulate 0 PRTS cards or a full weekly cap).
+    void set_status_override(std::optional<int> prts_cards, std::optional<int> weekly_progress) noexcept
+    {
+        m_override_prts_cards = prts_cards;
+        m_override_weekly_progress = weekly_progress;
+    }
+
     const AnnihilationStatusResult& last_status() const noexcept { return m_last_status; }
 
 protected:
@@ -38,6 +49,10 @@ private:
     OnNoCardAction m_on_no_card = OnNoCardAction::Current;
     OnNoRecordAction m_on_no_record = OnNoRecordAction::Current;
     int m_max_cards = -1;
+    OnCapReachedAction m_on_cap_reached = OnCapReachedAction::Skip;
+    std::optional<int> m_override_prts_cards;
+    std::optional<int> m_override_weekly_progress;
+    bool m_overridden = false;
     AnnihilationStatusResult m_last_status;
 };
 }

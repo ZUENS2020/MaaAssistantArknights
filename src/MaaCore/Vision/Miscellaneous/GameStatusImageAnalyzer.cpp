@@ -61,6 +61,41 @@ asst::HomeCurrencyResult asst::GameStatusImageAnalyzer::analyze_home_currency(co
     return result;
 }
 
+std::optional<asst::SlashCount> asst::GameStatusImageAnalyzer::analyze_home_sanity(const cv::Mat& image)
+{
+    auto current = analyze_number(image, "Status-SanityHomeCurrentOcr");
+    std::optional<int> max;
+    if (auto text = analyze_text(image, "Status-SanityHomeMaxOcr")) {
+        max = parse_trailing_number(*text);
+        if (!max) {
+            Log.info(__FUNCTION__, "sanity max parse failed", *text);
+        }
+    }
+    if (current && max && *max > 0 && *max < 1000 && *current >= 0 && *current < 1000) {
+        return SlashCount { .current = *current, .max = *max };
+    }
+    Log.info(__FUNCTION__, "home sanity miss", current.value_or(-1), max.value_or(-1));
+    return analyze_topbar_sanity(image);
+}
+
+std::optional<asst::SlashCount> asst::GameStatusImageAnalyzer::analyze_topbar_sanity(const cv::Mat& image)
+{
+    auto parsed = analyze_slash(image, "SanityMatch");
+    if (parsed && parsed->max < 1000) {
+        return parsed;
+    }
+    return std::nullopt;
+}
+
+std::optional<asst::SlashCount> asst::GameStatusImageAnalyzer::analyze_terminal_weekly(const cv::Mat& image)
+{
+    auto parsed = analyze_slash(image, "Status-AnnihilationWeeklyTerminal");
+    if (!parsed) {
+        return std::nullopt;
+    }
+    return pick_weekly_progress({ *parsed });
+}
+
 asst::AnnihilationStatusResult asst::GameStatusImageAnalyzer::analyze_annihilation(const cv::Mat& image)
 {
     AnnihilationStatusResult result;

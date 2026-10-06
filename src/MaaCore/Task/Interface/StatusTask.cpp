@@ -25,8 +25,25 @@ std::optional<asst::StatusTask::Params> asst::StatusTask::parse_params(const jso
             parsed.sanity = true;
             return true;
         }
-        if (field == "currency" || field == "orundum" || field == "originite" || field == "lmd") {
+        if (field == "currency") {
             parsed.currency = true;
+            parsed.need_orundum = true;
+            parsed.need_originite = true;
+            return true;
+        }
+        if (field == "orundum") {
+            parsed.currency = true;
+            parsed.need_orundum = true;
+            return true;
+        }
+        if (field == "originite") {
+            parsed.currency = true;
+            parsed.need_originite = true;
+            return true;
+        }
+        if (field == "lmd") {
+            parsed.currency = true;
+            parsed.need_lmd = true;
             return true;
         }
         if (field == "annihilation") {
@@ -59,8 +76,11 @@ std::optional<asst::StatusTask::Params> asst::StatusTask::parse_params(const jso
     }
 
     parsed.sanity = params.get("sanity", false);
-    parsed.currency = params.get("currency", false) || params.get("orundum", false) || params.get("originite", false) ||
-                      params.get("lmd", false);
+    const bool want_currency = params.get("currency", false);
+    parsed.need_orundum = want_currency || params.get("orundum", false);
+    parsed.need_originite = want_currency || params.get("originite", false);
+    parsed.need_lmd = params.get("lmd", false);
+    parsed.currency = parsed.need_orundum || parsed.need_originite || parsed.need_lmd;
     parsed.annihilation = params.get("annihilation", false);
     parsed.depot = params.get("depot", false);
     parsed.drones = params.get("drones", false);
@@ -107,6 +127,7 @@ bool asst::StatusTask::run()
 
     json::object details;
     json::array errors;
+    json::array warnings;
     bool ok = true;
 
     if (!go_home()) {
@@ -118,14 +139,10 @@ bool asst::StatusTask::run()
     }
 
     if (m_params.sanity || m_params.currency) {
-        if (!recognize_home_fields(details)) {
-            errors.emplace_back(m_params.sanity ? "sanity" : "currency");
-        }
+        recognize_home_fields(details, errors);
     }
     if (m_params.annihilation) {
-        if (!recognize_annihilation(details)) {
-            errors.emplace_back("annihilation");
-        }
+        recognize_annihilation(details, errors, warnings);
         go_home();
     }
     if (m_params.drones) {
@@ -141,6 +158,9 @@ bool asst::StatusTask::run()
         go_home();
     }
 
+    if (!warnings.empty()) {
+        details["warnings"] = std::move(warnings);
+    }
     if (!errors.empty()) {
         details["errors"] = std::move(errors);
         ok = false;
@@ -167,87 +187,140 @@ bool asst::StatusTask::go_home()
     return task.run();
 }
 
-bool asst::StatusTask::recognize_home_fields(json::object& details)
+namespace
+{
+json::object make_sanity_obj(const asst::SlashCount& sanity)
+{
+    json::object sanity_obj {
+        { "current", sanity.current },
+        { "max", sanity.max },
+    };
+    if (sanity.current < sanity.max) {
+        const auto recover_s = static_cast<long long>(sanity.max - sanity.current) * 6 * 60; // 1 sanity / 6 min
+        const auto next_full = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) + recover_s;
+        sanity_obj["next_full_at"] = next_full;
+    }
+    return sanity_obj;
+}
+
+void remove_error(json::array& errors, std::string_view name)
+{
+    json::array kept;
+    for (auto& item : errors) {
+        if (!(item.is_string() && item.as_string() == name)) {
+            kept.emplace_back(std::move(item));
+        }
+    }
+    errors = std::move(kept);
+}
+}
+
+void asst::StatusTask::recognize_home_fields(json::object& details, json::array& errors)
 {
     LogTraceFunction;
 
-    // Terminal (and the stage-select top bar) is where sanity is painted as current/max.
-    if (m_params.sanity) {
-        ProcessTask enter_terminal(*this, { "StatusEnterTerminal" });
-        enter_terminal.set_retry_times(5);
-        if (!enter_terminal.run()) {
-            Log.warn(__FUNCTION__, "failed to enter terminal for sanity");
-        }
-    }
-
+    // Current CN UI: the home screen paints sanity as a big "29" plus a "理智/205" label, and the
+    // top bar shows LMD / orundum / originite. (The terminal page no longer shows sanity.)
     auto image = ctrler()->get_image();
+
     if (m_params.sanity) {
-        if (auto sanity = FightTimesTaskPlugin::analyze_sanity_remain(image)) {
-            json::object sanity_obj {
-                { "current", sanity->current },
-                { "max", sanity->max },
-            };
-            if (sanity->current < sanity->max) {
-                const auto recover_s =
-                    static_cast<long long>(sanity->max - sanity->current) * 6 * 60; // 1 sanity / 6 min
-                const auto next_full =
-                    std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) + recover_s;
-                sanity_obj["next_full_at"] = next_full;
-            }
-            details["sanity"] = std::move(sanity_obj);
+        if (auto sanity = GameStatusImageAnalyzer::analyze_home_sanity(image)) {
+            details["sanity"] = make_sanity_obj(*sanity);
         }
         else {
-            Log.warn(__FUNCTION__, "sanity ocr failed");
-            return false;
+            Log.warn(__FUNCTION__, "sanity ocr failed on home screen");
+            errors.emplace_back("sanity");
         }
     }
 
     if (m_params.currency) {
         auto currency = GameStatusImageAnalyzer::analyze_home_currency(image);
-        if (currency.orundum) {
-            details["orundum"] = *currency.orundum;
-        }
-        if (currency.originite) {
-            details["originite"] = *currency.originite;
-        }
-        if (currency.lmd) {
-            details["lmd"] = *currency.lmd;
-        }
-        if (!currency.orundum && !currency.originite && !currency.lmd) {
-            Log.warn(__FUNCTION__, "currency ocr failed");
-            return false;
-        }
+        auto put = [&](std::string_view key, const std::optional<int>& value, bool required) {
+            if (value) {
+                details[std::string(key)] = *value;
+            }
+            else if (required) {
+                Log.warn(__FUNCTION__, "currency ocr failed", key);
+                errors.emplace_back(std::string(key));
+            }
+        };
+        put("orundum", currency.orundum, m_params.need_orundum);
+        put("originite", currency.originite, m_params.need_originite);
+        put("lmd", currency.lmd, m_params.need_lmd);
     }
-    return true;
 }
 
-bool asst::StatusTask::recognize_annihilation(json::object& details)
+void asst::StatusTask::recognize_annihilation(json::object& details, json::array& errors, json::array& warnings)
 {
     LogTraceFunction;
+
+    // The terminal To-Do list also shows the weekly orundum progress; read it on the way as a fallback.
+    std::optional<SlashCount> terminal_weekly;
+    {
+        ProcessTask enter_terminal(*this, { "StatusEnterTerminal" });
+        enter_terminal.set_retry_times(5);
+        if (enter_terminal.run()) {
+            terminal_weekly = GameStatusImageAnalyzer::analyze_terminal_weekly(ctrler()->get_image());
+        }
+        else {
+            Log.warn(__FUNCTION__, "failed to enter terminal before annihilation");
+        }
+    }
 
     ProcessTask nav(*this, { "StatusAnnihilationBegin" });
     nav.set_retry_times(5);
     if (!nav.run()) {
         Log.warn(__FUNCTION__, "failed to open annihilation page");
-        return false;
+        json::object anni;
+        if (terminal_weekly) {
+            anni["weekly_progress"] = terminal_weekly->current;
+            anni["weekly_cap"] = terminal_weekly->max;
+            details["annihilation"] = std::move(anni);
+        }
+        errors.emplace_back("annihilation");
+        return;
     }
 
     auto image = ctrler()->get_image();
     auto info = GameStatusImageAnalyzer::analyze_annihilation(image);
+    if (!info.weekly && terminal_weekly) {
+        Log.info(__FUNCTION__, "using terminal To-Do weekly progress");
+        info.weekly = terminal_weekly;
+    }
+
     json::object anni;
     if (!info.map_name.empty()) {
         anni["map_name"] = info.map_name;
     }
+    else {
+        warnings.emplace_back("annihilation.map_name");
+    }
     if (info.weekly) {
         anni["weekly_progress"] = info.weekly->current;
         anni["weekly_cap"] = info.weekly->max;
+        anni["weekly_cap_reached"] = info.weekly->current >= info.weekly->max;
+    }
+    else {
+        errors.emplace_back("annihilation.weekly_progress");
     }
     anni["record_full"] = info.record_full;
+    anni["can_agent"] = info.can_agent;
     if (info.prts_cards) {
         anni["prts_cards"] = *info.prts_cards;
     }
+    else {
+        errors.emplace_back("annihilation.prts_cards");
+    }
     details["annihilation"] = std::move(anni);
-    return true;
+
+    // The prep page shows sanity in its top bar: use it if the home screen read failed.
+    if (m_params.sanity && !details.contains("sanity")) {
+        if (auto sanity = GameStatusImageAnalyzer::analyze_topbar_sanity(image)) {
+            Log.info(__FUNCTION__, "sanity recovered from annihilation page top bar");
+            details["sanity"] = make_sanity_obj(*sanity);
+            remove_error(errors, "sanity");
+        }
+    }
 }
 
 bool asst::StatusTask::recognize_drones(json::object& details)

@@ -34,6 +34,12 @@ public:
     static std::optional<int> analyze_number(const cv::Mat& image, std::string_view task_name);
     static std::optional<std::string> analyze_text(const cv::Mat& image, std::string_view task_name);
     static HomeCurrencyResult analyze_home_currency(const cv::Mat& image);
+    // Home screen: big "29" + "理智/205" label. Falls back to the stage-page top bar (SanityMatch).
+    static std::optional<SlashCount> analyze_home_sanity(const cv::Mat& image);
+    // Stage / annihilation prep page top bar "29/205".
+    static std::optional<SlashCount> analyze_topbar_sanity(const cv::Mat& image);
+    // Terminal To-Do list "0/1800" next to 合成玉.
+    static std::optional<SlashCount> analyze_terminal_weekly(const cv::Mat& image);
     static AnnihilationStatusResult analyze_annihilation(const cv::Mat& image);
     static std::optional<SlashCount> analyze_drones(const cv::Mat& image);
 };

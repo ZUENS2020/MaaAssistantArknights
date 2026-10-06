@@ -116,52 +116,70 @@
         "action": "Stop",
         "next": []
     },
+    "Status-SanityHomeCurrentOcr": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "主界面「终端」按钮左侧当前理智大号数字",
+        "roi": [770, 136, 115, 80],
+        "binThreshold": [0, 255]
+    },
+    "Status-SanityHomeMaxOcr": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "主界面理智下方「理智/205」标签，取斜杠后的上限",
+        "roi": [780, 234, 108, 30],
+        "binThreshold": [0, 255]
+    },
     "Status-OriginiteOcr": {
         "baseTask": "NumberOcrReplace",
-        "doc": "主界面/终端顶栏源石数量",
-        "roi": [980, 6, 85, 36],
+        "doc": "主界面顶栏源石数量（CN 2026-10 UI 实机校准）",
+        "roi": [1118, 44, 60, 34],
         "binThreshold": [0, 255]
     },
     "Status-OrundumOcr": {
         "baseTask": "NumberOcrReplace",
-        "doc": "主界面/终端顶栏合成玉数量",
-        "roi": [1088, 6, 100, 36],
+        "doc": "主界面顶栏合成玉数量（CN 2026-10 UI 实机校准）",
+        "roi": [935, 44, 92, 34],
         "binThreshold": [0, 255]
     },
     "Status-LmdOcr": {
         "baseTask": "NumberOcrReplace",
-        "doc": "部分界面顶栏龙门币；主界面通常不可读，识别失败则省略",
-        "roi": [860, 6, 90, 36],
+        "doc": "主界面顶栏龙门币（CN 2026-10 UI 实机校准）",
+        "roi": [752, 54, 125, 36],
         "binThreshold": [0, 255]
     },
     "Status-AnnihilationMapName": {
         "algorithm": "OcrDetect",
         "text": [],
-        "doc": "剿灭备战页左侧地图名",
-        "roi": [70, 70, 520, 90]
+        "doc": "剿灭备战页右侧标题地图名（如 默祷圣祠）",
+        "roi": [960, 104, 315, 50]
     },
     "Status-AnnihilationWeekly": {
         "baseTask": "NumberOcrReplace",
-        "doc": "剿灭备战页本周合成玉进度 x/cap",
-        "roi": [430, 620, 220, 50],
+        "doc": "剿灭备战页左下「每周报酬 合成玉」进度 x/cap",
+        "roi": [100, 638, 210, 56],
         "useRaw": true
     },
     "Status-AnnihilationWeeklyAlt": {
         "baseTask": "NumberOcrReplace",
-        "doc": "备战页周进度备选区域（奖励条附近）",
-        "roi": [500, 450, 280, 80],
+        "doc": "备战页周进度备选区域（同一位置放宽）",
+        "roi": [90, 630, 240, 66],
         "useRaw": true
     },
     "Status-AnnihilationPrtsCards": {
         "baseTask": "NumberOcrReplace",
-        "doc": "全权委托按钮附近的常态事务代理卡数量",
-        "roi": [790, 545, 80, 40],
+        "doc": "剿灭备战页顶栏 PRTS 图标右侧的常态事务代理卡数量",
+        "roi": [990, 18, 75, 42],
         "binThreshold": [0, 255]
     },
     "Status-DronesOcr": {
         "baseTask": "NumberOcrReplace",
         "doc": "基建总览顶栏无人机 current/max",
         "roi": [1040, 0, 240, 50],
+        "useRaw": true
+    },
+    "Status-AnnihilationWeeklyTerminal": {
+        "baseTask": "NumberOcrReplace",
+        "doc": "终端 To-Do 列表 合成玉 周进度 x/1800",
+        "roi": [1145, 118, 128, 40],
         "useRaw": true
     }
 }
