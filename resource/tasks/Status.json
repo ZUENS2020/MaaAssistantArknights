@@ -166,8 +166,8 @@
     },
     "Status-AnnihilationWeeklyAlt": {
         "baseTask": "NumberOcrReplace",
-        "doc": "备战页周进度备选区域（同一位置放宽）",
-        "roi": [90, 630, 240, 66],
+        "doc": "备战页周进度备选区域（同一位置收紧，排除倒计时）",
+        "roi": [98, 640, 150, 48],
         "useRaw": true
     },
     "Status-AnnihilationPrtsCards": {

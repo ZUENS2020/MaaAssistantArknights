@@ -296,6 +296,23 @@ Currently supported stages for navigation include:
   @optional
   Annihilation only. Maximum PRTS proxy cards to consume this run. `-1` means unlimited.  
   :::  
+  ::: field on_cap_reached  
+  @type string
+  @default skip
+  @optional
+  Annihilation only. What to do when the weekly orundum cap is already reached (e.g. 1800/1800), read on the prep page before the fight:
+  <br>
+  `skip` (default) - do not fight; task chain succeeds; `TaskResult.status=skipped`, `reason=WEEKLY_CAP_REACHED`
+  <br>
+  `current` - keep fighting (report only, historical behavior)
+  <br>
+  `fail` - fail the task, `reason=WEEKLY_CAP_REACHED`  
+  :::  
+  ::: field annihilation_test_override  
+  @type object
+  @optional
+  Test hook only. Replaces the pre-check OCR values before the policies run, e.g. `{"prts_cards": 0}` or `{"weekly_progress": 1800}`. `AnnihilationStatus.overridden=true` marks such runs. Do not use in production.  
+  :::  
   ::::
 
 <details>

@@ -296,6 +296,23 @@ B服：`张三`，可输入 `张三`、`张`、`三`
   @optional
   仅剿灭时生效。本次最多消耗的常态事务代理卡数量。`-1` 表示不限制。  
   :::  
+  ::: field on_cap_reached  
+  @type string
+  @default skip
+  @optional
+  仅剿灭关卡。开战前在备战页读到本周合成玉已达上限（如 1800/1800）时的行为：
+  <br>
+  `skip`（默认）- 不打剿灭，任务链成功，`TaskResult.status=skipped`，`reason=WEEKLY_CAP_REACHED`
+  <br>
+  `current` - 照常开打（仅记录，旧行为）
+  <br>
+  `fail` - 任务失败，`reason=WEEKLY_CAP_REACHED`  
+  :::  
+  ::: field annihilation_test_override  
+  @type object
+  @optional
+  仅供测试。在预检策略执行前替换 OCR 结果，例如 `{"prts_cards": 0}` 或 `{"weekly_progress": 1800}`；回调 `AnnihilationStatus.overridden=true`。请勿在正式任务中使用。  
+  :::  
   ::::
 
 <details>
